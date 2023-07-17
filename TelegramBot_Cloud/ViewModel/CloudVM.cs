@@ -17,16 +17,18 @@ namespace TelegramBot_Cloud.ViewModel
         private CloudProcessing _cloudProcessing { get; set; }
         private DataProcessing _dataProcessing { get; set; }
         private ButtonHandler _buttonHandler { get; set; }
-        private readonly long _limitMemoryInBytes = 33554432;
-        private static readonly string _globalFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\TelegramBotCloud";
+        private SubscriptionsProcessing _subscriptionsProcessing { get; set; }
+        private long _limitMemoryInBytes { get; set; }
+        public static readonly string _globalFilePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\TelegramBotCloud";
         #endregion Private_Fields
 
         #region Constructor
-        public CloudVM(CloudProcessing cloudProcessing, ButtonHandler buttonHandler, DataProcessing dataProcessing)
+        public CloudVM(CloudProcessing cloudProcessing, ButtonHandler buttonHandler, DataProcessing dataProcessing, SubscriptionsProcessing subscriptionsProcessing)
         {
             _cloudProcessing = cloudProcessing;
             _buttonHandler = buttonHandler;
             _dataProcessing = dataProcessing;
+            _subscriptionsProcessing = subscriptionsProcessing;
         }
         #endregion Constructor
 
@@ -35,13 +37,24 @@ namespace TelegramBot_Cloud.ViewModel
         #endregion Private_Func
 
         #region Public_Methods
-        public string RemainingMemory(long userId)
+        public string RemainingMemory(long userId, double limitMemory)
         {
             var usedMemory = _cloudProcessing.CalculateFolderWeight($"{_globalFilePath}\\{userId}");
-            var remainMemory = _limitMemoryInBytes - usedMemory;
-            var title = $"☁️ Используется {Math.Round(ConverterBytesToMegabytes(usedMemory),2)}MB | {Math.Round(ConverterBytesToMegabytes(_limitMemoryInBytes),2)}MB\n" +
-                $"☁️ Остаток {Math.Round(ConverterBytesToMegabytes(remainMemory),2)}";
+            var remainMemory = limitMemory - usedMemory;
+            var title = $"☁️ Используется {Math.Round(usedMemory,2)}MB | {Math.Round(limitMemory,2)}MB\n" +
+                $"☁️ Остаток {Math.Round(remainMemory,2)}MB";
             return title;
+        }
+        public async Task<string> UserInfo(long userId)
+        {
+            var userSubName = await _subscriptionsProcessing.GetSubscriptionUserLevelAsync(userId);
+            var expirationDate = await _subscriptionsProcessing.GetExpirationSubscriptionDateAsync(userId);
+            var limitMemory = _subscriptionsProcessing.GetSubscriptionMemoryLimit(userSubName);
+            var remainingMemory = RemainingMemory(userId, limitMemory);
+
+            var profileInfo = $"Подписка: {userSubName}\nАктивно до {expirationDate}\n\nОблачное хранилище\n{remainingMemory}";
+
+            return profileInfo;
         }
         public async Task UserFiles(CallbackQuery callbackQuery, FileActions.Action action)
         {
@@ -83,23 +96,26 @@ namespace TelegramBot_Cloud.ViewModel
         }
         public async Task SavingProcedure(Update update)
         {
-            CheckIfUserExists(update);
+            await CheckIfUserExists(update);
 
             _userId = update.Message.Chat.Id;
             _fileId = update.Message.Document.FileId;
             _fileName = update.Message.Document.FileName;
 
+            var userSub = await _dataProcessing.GetUserSubscribe(_userId);
+            var limitMemory = Math.Round(_subscriptionsProcessing.GetSubscriptionMemoryLimit(userSub), 2);
+
             var file = BotVM.BotClient.GetFileAsync(_fileId).Result;
             string path = $"{_globalFilePath}\\{_userId}";
-            var usedMemory = _cloudProcessing.CalculateFolderWeight(path);
-            long fileWeight = update.Message.Document.FileSize.Value;
+            var usedMemory = Math.Round(_cloudProcessing.CalculateFolderWeight(path),2);
+            double fileWeight = Math.Round(Converter.BytesToMegabytes(update.Message.Document.FileSize.Value), 2);
 
-            if (usedMemory+fileWeight <= _limitMemoryInBytes)
+            if (usedMemory+fileWeight <= limitMemory)
             {
                 if (await _cloudProcessing.FileSaving(file, _fileName, path))
                 {
-                    await MessageHandler.SendMessageUser(_userId, "✅ Файл успешно сохранен");
-                    _dataProcessing.SavingFileData(_userId, _fileName, Math.Round(ConverterBytesToMegabytes(fileWeight), 2));
+                    await MessageHandler.SendMessageUser(_userId, $"✅ Файл успешно сохранен");
+                    await _dataProcessing.SavingFileDataAsync(_userId, _fileName, Math.Round(ConverterBytesToMegabytes(fileWeight), 2));
                 }
                 else await MessageHandler.SendMessageUser(_userId, "Ошибка при сохранении файла");
             }
@@ -108,19 +124,19 @@ namespace TelegramBot_Cloud.ViewModel
                 await MessageHandler.SendMessageUser(
                 _userId, 
                 $"❌ Не хватает места\n" +
-                $"☁️ Использовано памяти - {Math.Round(ConverterBytesToMegabytes(usedMemory), 2)}\n" +
-                $"☁️ Вес файла - {Math.Round(ConverterBytesToMegabytes(fileWeight), 2)}\n" +
-                $"☁️ Лимит - {Math.Round(ConverterBytesToMegabytes(_limitMemoryInBytes), 2)}"); 
+                $"☁️ Использовано памяти - {usedMemory}\n" +
+                $"☁️ Вес файла - {fileWeight}\n" +
+                $"☁️ Лимит - {limitMemory}");
             }
         }
-        public void CheckIfUserExists(Update update)
+        public async Task CheckIfUserExists(Update update)
         {
             var userId = update.Message.Chat.Id;
             var username = update.Message.Chat.Username;
             var firstName = update.Message.Chat.FirstName;
 
-            if (!_dataProcessing.UserVerification(userId))
-                _dataProcessing.RegistrationUser(userId, username, firstName);
+            if( !(await _dataProcessing.UserVerificationAsync(userId)) )
+                await _dataProcessing.RegistrationUserAsync(userId, username, firstName);
         }
         #endregion Public_Methods
     }

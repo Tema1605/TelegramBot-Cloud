@@ -43,8 +43,7 @@ namespace TelegramBot_Cloud.ViewModel
             catch(Exception ex)
             {
                 await Console.Out.WriteLineAsync($"Ошибка при получении сообщения пользователя: {ex.Message}");
-            }
-            
+            }            
         }
         public static async Task SendMessageUser(long userId, string textMessage)
         {

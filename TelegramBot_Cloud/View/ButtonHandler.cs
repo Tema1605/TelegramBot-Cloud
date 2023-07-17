@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot_Cloud.ViewModel;
 
@@ -11,31 +12,35 @@ namespace TelegramBot_Cloud.View
         #region Private_Fields
         private const string _deleteFile= "DelFile_";
         private const string _getFile= "GetFile_";
-        private string _greetingMessage =
+        private readonly string _greetingMessage =
             "Приветствую вас!\nЯ - ваш личный помощник и облачный хранитель файлов. " +
             "Я здесь, чтобы облегчить вам жизнь, предоставляя доступ к вашим файлам где бы вы ни находились. " +
             "Я могу помочь вам организовать и сохранить важные документы, фотографии, видео и многое другое. " +
             "Просто отправьте мне файл, и я надежно сохрани его для вас.\n\n Список команд:\n" +
             "/start - Перезапуск бота\n" +
             "/menu - Меню\n" +
-            "/profileinfo - Информация профиля";
+            "/profileinfo - Информация профиля\n" +
+            "/pay - Купить подписку";
+        private readonly string _donateInfo =
+            "ℹ️ Информация о ежемесячной подписке ℹ️\n\n" +
+            "💼 Basic\n" +
+            "+256MB ☁️\n\n" +
+            "🌟 Premium\n" +
+            "+512MB ☁️\n\n" +
+            "🚀 Professional\n" +
+            "+1024MB ☁️\n\n" +
+            "• Подписка действует 1 месяц после покупки";
         #endregion Private_Fields
 
-        #region Constructor
-        internal ButtonHandler()
-        {
-            
-        }
-        #endregion Constructor
-
         #region Public_Methods
-        public async Task ShowMenu(long chatId)
+        public async Task ShowMenu(long userId)
         {
             var buttonMenu = new InlineKeyboardMarkup(new[]
             {
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData("Информация Профиля", "ProfileInfo"),
+                    InlineKeyboardButton.WithCallbackData("Оформить подписку", "Subscribe"),
                 },
                 new[]
                 {
@@ -43,7 +48,7 @@ namespace TelegramBot_Cloud.View
                     InlineKeyboardButton.WithCallbackData("Удалить Файл", "DeleteFile"),
                 },
             });
-            await MessageHandler.SendMessageUser(chatId, "Выберите пункт меню", buttonMenu);
+            await MessageHandler.SendMessageUser(userId, "Выберите пункт меню", buttonMenu);
         }
         public IReplyMarkup GenerateInlineKeyboardButtons(List<string> fileList, FileActions.Action action)
         {
@@ -75,6 +80,35 @@ namespace TelegramBot_Cloud.View
             }
 
             return new InlineKeyboardMarkup(buttonsArray.ToArray());
+        }
+        public async Task DonationMenu(long userId)
+        {
+            var buttonDonateMenu = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Basic +256MB ☁️", "SUB_Basic"),
+                    InlineKeyboardButton.WithCallbackData("Premium +512MB ☁️", "SUB_Premium"),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Professional +1024MB ☁️", "SUB_Professional"),                    
+                },
+            });
+            await MessageHandler.SendMessageUser(userId, _donateInfo, buttonDonateMenu);
+        }
+
+        public async Task SubscriptionRenewalButtonsMenu(long userId, string subName)
+        {
+            var btnMenu = new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Продлить подписку", $"RSUB_{subName}"),
+                    InlineKeyboardButton.WithCallbackData("Продолжить без подписки", "RSUB_NotRenewal"),
+                }
+            });
+            await MessageHandler.SendMessageUser(userId, $"У вас закончилась ежемесячная подписка {subName}", btnMenu);
         }
         public async Task Greeting(long chatId)
         {

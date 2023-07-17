@@ -62,7 +62,7 @@ namespace TelegramBot_Cloud.Model
                 {
                     totalSize += file.Length;
                 }
-                return totalSize;
+                return Converter.BytesToMegabytes(totalSize);
             } 
             catch(Exception ex)
             {

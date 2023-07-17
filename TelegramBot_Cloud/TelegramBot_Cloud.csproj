@@ -64,8 +64,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\CloudProcessing.cs" />
+    <Compile Include="Model\Converter.cs" />
     <Compile Include="Model\DataProcessing.cs" />
+    <Compile Include="Model\Payment\PaymentRequest.cs" />
+    <Compile Include="Model\Payment\PaymentResponse.cs" />
+    <Compile Include="Model\Payment\PaymentResult.cs" />
+    <Compile Include="Model\Payment\Price.cs" />
     <Compile Include="Model\SqlConnect.cs" />
+    <Compile Include="Model\SubscribeLevels.cs" />
+    <Compile Include="Model\SubscribeLevelsRepository.cs" />
+    <Compile Include="Model\SubscriptionsProcessing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\BotVM.cs" />
@@ -73,6 +81,7 @@
     <Compile Include="ViewModel\CommandHandler.cs" />
     <Compile Include="ViewModel\FileActions.cs" />
     <Compile Include="ViewModel\MessageHandler.cs" />
+    <Compile Include="ViewModel\PaymentVM.cs" />
     <Compile Include="View\ButtonHandler.cs" />
   </ItemGroup>
   <ItemGroup>

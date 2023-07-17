@@ -1,37 +1,39 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TelegramBot_Cloud.Model
 {
     internal class SqlConnect : IDisposable
     {
-        SqlConnection sqlConnection = new SqlConnection(@"Data Source=LAPTOP-5OB9P5SK\SQLEXPRESS;Initial Catalog=TelegramBotCloud;Integrated Security=True");
-
-        internal void OpenConnection()
+        SqlConnection sqlConnection = new SqlConnection(
+            @"Data Source=LAPTOP-5OB9P5SK\SQLEXPRESS;Initial Catalog=TelegramBotCloud;Integrated Security=True");
+        public async Task OpenConnectionAsync()
         {
-            if (sqlConnection.State == System.Data.ConnectionState.Closed) { }
-            try
+            if (sqlConnection.State == System.Data.ConnectionState.Closed)
             {
-                sqlConnection.Open();
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex}\n{ex.Message}");
+                try
+                {
+                    await sqlConnection.OpenAsync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка: {ex}\n{ex.Message}");
+                }
             }
         }
-
-        internal void CloseConnection()
+        public void CloseConnection()
         {
-            if (sqlConnection.State == System.Data.ConnectionState.Open) { }
-            sqlConnection.Close();
+            if (sqlConnection.State == System.Data.ConnectionState.Open)
+            {
+                sqlConnection.Close();
+            }
         }
-
-        internal SqlConnection GetConnection()
+        public SqlConnection GetConnection()
         {
             return sqlConnection;
         }
-
         public void Dispose()
         {
             CloseConnection();
