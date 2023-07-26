@@ -19,16 +19,15 @@ namespace TelegramBot_Cloud.View
             "Просто отправьте мне файл, и я надежно сохрани его для вас.\n\n Список команд:\n" +
             "/start - Перезапуск бота\n" +
             "/menu - Меню\n" +
-            "/profileinfo - Информация профиля\n" +
             "/pay - Купить подписку";
         private readonly string _donateInfo =
             "ℹ️ Информация о ежемесячной подписке ℹ️\n\n" +
             "💼 Basic\n" +
-            "+256MB ☁️\n\n" +
+            "16MB ☁️\n\n" +
             "🌟 Premium\n" +
-            "+512MB ☁️\n\n" +
+            "32MB ☁️\n\n" +
             "🚀 Professional\n" +
-            "+1024MB ☁️\n\n" +
+            "64MB ☁️\n\n" +
             "• Подписка действует 1 месяц после покупки";
         #endregion Private_Fields
 
@@ -87,12 +86,12 @@ namespace TelegramBot_Cloud.View
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Basic +256MB ☁️", "SUB_Basic"),
-                    InlineKeyboardButton.WithCallbackData("Premium +512MB ☁️", "SUB_Premium"),
+                    InlineKeyboardButton.WithCallbackData("Basic 16MB ☁️", "SUB_Basic"),
+                    InlineKeyboardButton.WithCallbackData("Premium 32MB ☁️", "SUB_Premium"),
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Professional +1024MB ☁️", "SUB_Professional"),                    
+                    InlineKeyboardButton.WithCallbackData("Professional 64MB ☁️", "SUB_Professional"),                    
                 },
             });
             await MessageHandler.SendMessageUser(userId, _donateInfo, buttonDonateMenu);
@@ -104,8 +103,8 @@ namespace TelegramBot_Cloud.View
             {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Продлить подписку", $"RSUB_{subName}"),
-                    InlineKeyboardButton.WithCallbackData("Продолжить без подписки", "RSUB_NotRenewal"),
+                    InlineKeyboardButton.WithCallbackData("✅ Продлить подписку", $"RSUB_{subName}"),
+                    InlineKeyboardButton.WithCallbackData("❌ Продолжить без подписки", "RSUB_NotRenewal"),
                 }
             });
             await MessageHandler.SendMessageUser(userId, $"У вас закончилась ежемесячная подписка {subName}", btnMenu);

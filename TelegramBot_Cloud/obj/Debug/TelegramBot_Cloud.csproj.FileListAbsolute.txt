@@ -36,3 +36,22 @@ D:\Project\C#\TelegramBot_Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.cs
 D:\Project\C#\TelegramBot_Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.csproj.CopyComplete
 D:\Project\C#\TelegramBot_Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.exe
 D:\Project\C#\TelegramBot_Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.pdb
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\TelegramBot_Cloud.exe.config
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\TelegramBot_Cloud.exe
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\TelegramBot_Cloud.pdb
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\Newtonsoft.Json.dll
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\System.ComponentModel.Annotations.dll
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\System.Threading.Tasks.Extensions.dll
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\Telegram.Bot.dll
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\Newtonsoft.Json.xml
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\System.Threading.Tasks.Extensions.xml
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\Telegram.Bot.pdb
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\bin\Debug\Telegram.Bot.xml
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.csproj.AssemblyReference.cache
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.csproj.SuggestedBindingRedirects.cache
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.csproj.CoreCompileInputs.cache
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.csproj.CopyComplete
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.exe
+Q:\Проекты C#\Telega\TelegramBot-Cloud\TelegramBot_Cloud\obj\Debug\TelegramBot_Cloud.pdb

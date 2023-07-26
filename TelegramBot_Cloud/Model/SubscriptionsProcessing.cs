@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
-using Telegram.Bot.Types;
 using TelegramBot_Cloud.View;
 using TelegramBot_Cloud.ViewModel;
 
@@ -16,6 +11,7 @@ namespace TelegramBot_Cloud.Model
         private PaymentVM _paymentVM { get; set; }
         private ButtonHandler _buttonHandler {  get; set; } 
         private CloudProcessing _cloudProcessing { get; set; }
+        public CloudVM _cloudVM { get; set; }
         public SubscriptionsProcessing(DataProcessing dataProcessing, PaymentVM paymentVM, ButtonHandler buttonHandler, CloudProcessing cloudProcessing)
         {
             _dataProcessing = dataProcessing;   
@@ -45,12 +41,22 @@ namespace TelegramBot_Cloud.Model
         }
         public async Task RegistrationSubscriptionAsync(long userId, string subName)
         {
+            var subActive = await GetSubscriptionUserLevelAsync(userId);
+            var limitSubActive = GetSubscriptionMemoryLimit(subActive);
+            var limitSubCreate = GetSubscriptionMemoryLimit(subName);
+
+            if (limitSubActive >= limitSubCreate)
+            {
+                await MessageHandler.SendMessageUser(userId, $"У вас уже оформлена подписка {subActive}");
+                return;
+            }
+
             var result = await _paymentVM.CreatePaymanRequest(userId, subName);
 
             if (result)
-                await MessageHandler.SendMessageUser(userId, $"Подписка {subName} успешно оформлена");
+                await MessageHandler.SendMessageUser(userId, $"✅ Подписка {subName} успешно оформлена");
             else
-                await MessageHandler.SendMessageUser(userId, $"Произошла ошибка во время оплаты");
+                await MessageHandler.SendMessageUser(userId, $"❌ Произошла ошибка во время оплаты");
         }
         public async Task SubscriptionRenewalAsync(long userId)
         {
@@ -64,25 +70,17 @@ namespace TelegramBot_Cloud.Model
         }
         public async Task UnsubscribeProcedureAsync(long userId)
         {
-            var isRelevance = await CheckRelevanceSubscribe(userId);
+            await _dataProcessing.UpdateUserSubscribe(userId, "Standart");
 
-            if (!isRelevance)
+            var path = $"{CloudVM._globalFilePath}\\{userId}";
+            var limit = GetSubscriptionMemoryLimit("Standart");
+            var occupiedUserSpace = _cloudProcessing.CalculateFolderWeight(path);
+            if (occupiedUserSpace > limit)
             {
-                await _dataProcessing.UpdateUserSubscribe(userId, "Standart");
-
-                var path = $"{CloudVM._globalFilePath}\\{userId}";
-                var limit = GetSubscriptionMemoryLimit("Standart");
-                var occupiedUserSpace = _cloudProcessing.CalculateFolderWeight(path);
-
-                if (occupiedUserSpace > limit)
-                {
-                    //Процедура удаления файлов
-                    await Console.Out.WriteLineAsync("Процедура удаления файлов пользователя");
-                }
-            }
-            
+                //Процедура удаления файлов
+                await _cloudVM.DeleteUserFile(userId, limit);
+            }     
         }
-
         public async Task<bool> CheckRelevanceSubscribe(long userId)
         {
             var dateSub = await GetExpirationSubscriptionDateAsync(userId, false);

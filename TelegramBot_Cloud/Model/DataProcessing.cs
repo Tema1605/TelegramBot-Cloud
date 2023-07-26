@@ -1,11 +1,8 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
-using Telegram.Bot.Types;
 
 namespace TelegramBot_Cloud.Model
 {
@@ -188,10 +185,11 @@ namespace TelegramBot_Cloud.Model
                     List<long> usersId = new List<long>();
                     await connection.OpenConnectionAsync();
 
-                    string query = $"" +
+                    string query =
                         $"SELECT user_id " +
                         $"FROM User_subscription " +
-                        $"WHERE expiration_date < GetDate()";
+                        $"WHERE expiration_date < GetDate()" +
+                        $"AND sub_id != 'Standart'";
 
                     using (SqlCommand command = new SqlCommand(query, connection.GetConnection()))
                     {
@@ -216,42 +214,5 @@ namespace TelegramBot_Cloud.Model
                 }
             }
         }
-
-        //public async Task GetDonateListAsync()
-        //{
-        //    using(SqlConnect connection = new SqlConnect())
-        //    {
-        //        try
-        //        {
-        //            await connection.OpenConnectionAsync();
-
-        //            string query = "select * from Subscribe_level";
-        //            //ObservableCollection<string> donate = new ObservableCollection<string>();
-
-        //            using (SqlCommand command = new SqlCommand(query, connection.GetConnection()))
-        //            {
-        //                var _row = command.ExecuteReader();
-
-        //                if (_row == null) return;
-        //                if (_row.HasRows)
-        //                {
-        //                    while (_row.Read())
-        //                    {
-        //                        SubscribeLevelsRepository._subscribeLevels.Add(new SubscribeLevels()
-        //                        {
-        //                            Name = _row.GetString(0),
-        //                            LimitBytes = _row.GetInt64(1)
-        //                        });
-        //                    }
-        //                }
-        //                _row.Close();
-        //            }
-        //        }
-        //        catch(Exception ex)
-        //        {
-        //            await Console.Out.WriteLineAsync(ex.Message);
-        //        }
-        //    }
-        //}
     }
 }

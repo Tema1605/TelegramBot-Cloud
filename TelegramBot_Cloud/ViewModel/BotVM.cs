@@ -1,13 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Net.Http;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using TelegramBot_Cloud.Model;
-using TelegramBot_Cloud.Model.Payment;
 using TelegramBot_Cloud.View;
 
 namespace TelegramBot_Cloud.ViewModel
@@ -32,7 +28,7 @@ namespace TelegramBot_Cloud.ViewModel
         #endregion Internal_Fields
 
         #region Constructor
-        public BotVM()
+        public async Task<BotVM> InitializeAsync()
         {
             BotClient = new TelegramBotClient(_token) { Timeout = TimeSpan.FromSeconds(300) };
             BotClient.StartReceiving(Update, Error);
@@ -42,11 +38,14 @@ namespace TelegramBot_Cloud.ViewModel
             _dataProcessing = new DataProcessing();            
             _paymentVM = new PaymentVM(_dataProcessing, _token, _tokenPay);
             _subscriptionsProcessing = new SubscriptionsProcessing(_dataProcessing, _paymentVM, _buttonHandler, _cloudProcessing);
-            _cloudVM = new CloudVM(_cloudProcessing, _buttonHandler, _dataProcessing, _subscriptionsProcessing);            
+            _cloudVM = new CloudVM(_cloudProcessing, _buttonHandler, _dataProcessing, _subscriptionsProcessing);
             _commandHandler = new CommandHandler(_buttonHandler, _cloudVM, _subscriptionsProcessing);
             _messageHandler = new MessageHandler(_commandHandler, _cloudVM);
 
-            _subscriptionsProcessing.CheckingUserSubscriptionsAsync();
+            _subscriptionsProcessing._cloudVM = _cloudVM;
+            await _subscriptionsProcessing.CheckingUserSubscriptionsAsync();
+
+            return this;
         }
         #endregion Constructor
 

@@ -27,8 +27,11 @@ namespace TelegramBot_Cloud.ViewModel
         #region Public_Methods
         public async Task ProcessCommand(Update update)
         {
+            await _cloudVM.CheckIfUserExists(update);
+
             string command = update.Message.Text;
             long userId = update.Message.Chat.Id;
+
             switch (command.ToLower().Trim())
             {
                 case "/start":
@@ -36,9 +39,6 @@ namespace TelegramBot_Cloud.ViewModel
                     break;
                 case "/menu":
                     await _buttonHandler.ShowMenu(userId);
-                    break;
-                case "/profileinfo":
-                    await MessageHandler.SendMessageUser(userId, $"{await _cloudVM.UserInfo(userId)}");
                     break;
                 case "/pay":
                     await _buttonHandler.DonationMenu(userId);

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
 using Telegram.Bot;
@@ -48,24 +50,37 @@ namespace TelegramBot_Cloud.ViewModel
         public async Task<string> UserInfo(long userId)
         {
             var userSubName = await _subscriptionsProcessing.GetSubscriptionUserLevelAsync(userId);
-            var expirationDate = await _subscriptionsProcessing.GetExpirationSubscriptionDateAsync(userId);
             var limitMemory = _subscriptionsProcessing.GetSubscriptionMemoryLimit(userSubName);
             var remainingMemory = RemainingMemory(userId, limitMemory);
 
-            var profileInfo = $"Подписка: {userSubName}\nАктивно до {expirationDate}\n\nОблачное хранилище\n{remainingMemory}";
+            if (userSubName != "Standart")
+            {
+                dynamic expirationDate;
+                expirationDate = await _subscriptionsProcessing.GetExpirationSubscriptionDateAsync(userId);
 
-            return profileInfo;
+                var profileInfo = $"Подписка: {userSubName}\nАктивно до {expirationDate}\n\nОблачное хранилище\n{remainingMemory}";
+                return profileInfo;
+            }
+            else
+            {
+                var profileInfo = $"Подписка: {userSubName}\n\nОблачное хранилище\n{remainingMemory}";
+                return profileInfo;
+            }
+
         }
         public async Task UserFiles(CallbackQuery callbackQuery, FileActions.Action action)
         {
-            string list = string.Empty;
             var userId = callbackQuery.Message.Chat.Id;
             var fileList = _cloudProcessing.GetListUserFiles($"{_globalFilePath}\\{userId}");
-            foreach (var el in fileList)
-                list += $"{el}\n";
 
-            var buttons = _buttonHandler.GenerateInlineKeyboardButtons(fileList, action);
-            await BotVM.BotClient.SendTextMessageAsync(userId, "☁️ Выберите файл", replyMarkup: buttons);
+            if (fileList != null)
+            {
+                var buttons = _buttonHandler.GenerateInlineKeyboardButtons(fileList, action);
+                await BotVM.BotClient.SendTextMessageAsync(userId, "☁️ Выберите файл", replyMarkup: buttons);
+            }
+            else
+                await MessageHandler.SendMessageUser(userId, "У вас нет файлов");
+            
         }
         public async Task GetUserFile(long userId, string fileName)
         {
@@ -86,13 +101,49 @@ namespace TelegramBot_Cloud.ViewModel
 
             try
             {
-                if (await _cloudProcessing.DeleteFile(path)) await MessageHandler.SendMessageUser(_userId, "✅ Файл успешно удален");
-                else await MessageHandler.SendMessageUser(_userId, "Ошибка при удалении файла");
+                if (await _cloudProcessing.DeleteFile(path)) 
+                    await MessageHandler.SendMessageUser(userId, "✅ Файл успешно удален");
+                else 
+                    await MessageHandler.SendMessageUser(userId, "Ошибка при удалении файла");
             }
             catch (Exception ex)
             {
                 await Console.Out.WriteLineAsync("Ошибка при удалении файла пользователя: " + ex.Message);
             }
+        }
+
+        public async Task DeleteUserFile(long userId, double sizeLimitBytes)
+        {
+            string folderPath = $"{_globalFilePath}\\{userId}";
+
+            var directoryInfo = new DirectoryInfo(folderPath);
+
+            if (!directoryInfo.Exists)
+            {
+                Console.WriteLine("Папка не найдена.");
+                return;
+            }
+            var directorySize = _cloudProcessing.CalculateFolderWeight(folderPath);
+            var files = directoryInfo.GetFiles().OrderByDescending(f => f.Length);
+            await MessageHandler.SendMessageUser(userId,"Некоторые файлы которые пришлось удалить");
+            while (directorySize > sizeLimitBytes)
+            {
+                var largestFile = files.FirstOrDefault();
+
+                if (largestFile == null)
+                {
+                    Console.WriteLine("Все файлы удалены или папка пуста.");
+                    break;
+                }
+                await GetUserFile(userId, largestFile.Name);
+                await _cloudProcessing.DeleteFile($"{folderPath}\\{largestFile.Name}");
+                Console.WriteLine($"Удален файл: {largestFile.Name}");
+                directorySize -= (double)largestFile.Length / 1048576;
+
+                files = directoryInfo.GetFiles().OrderByDescending(f => f.Length);
+            }
+
+            Console.WriteLine("Удаление файлов завершено.");
         }
         public async Task SavingProcedure(Update update)
         {

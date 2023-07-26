@@ -1,27 +1,30 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using TelegramBot_Cloud.Model.Payment;
 using TelegramBot_Cloud.Model;
+using TelegramBot_Cloud.Model.Payment;
 
 namespace TelegramBot_Cloud.ViewModel
 {
     internal class PaymentVM
     {
-        private DataProcessing _dataProcessing {  get; set; }
+        #region Private_Fields
+        private DataProcessing _dataProcessing { get; set; }
         private readonly string _tokenBot;
         private readonly string _tokenPay;
+        #endregion Private_Fields
+
+        #region Constructor
         public PaymentVM(DataProcessing dataProcessing, string tokenBot, string tokenPay)
         {
             _dataProcessing = dataProcessing;
             _tokenBot = tokenBot;
             _tokenPay = tokenPay;
         }
+        #endregion Constructor
+
+        #region Private_Methods
         private async Task<bool> Payment(PaymentRequest paymentRequest)
         {
             // Преобразуем платежный запрос в JSON
@@ -41,8 +44,8 @@ namespace TelegramBot_Cloud.ViewModel
 
                     if (paymentResponse.IsSuccessful)
                     {
-                        Console.WriteLine("Платеж прошел успешно\n" + 
-                            "Payment Message ID: " + 
+                        Console.WriteLine("Платеж прошел успешно\n" +
+                            "Payment Message ID: " +
                             paymentResponse.Result.PaymentMessageId);
                         return true;
                     }
@@ -55,7 +58,15 @@ namespace TelegramBot_Cloud.ViewModel
                 else return false;
             }
         }
+        #endregion Private_Methods
 
+        #region Public_Methods
+        /// <summary>
+        /// Создает платежный запрос.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <param name="subName">Название подписки</param>
+        /// <returns>True, если платеж прошел успешно. False, в противном случае.</returns>
         public async Task<bool> CreatePaymanRequest(long userId, string subName)
         {
             int amount = 0;
@@ -89,11 +100,12 @@ namespace TelegramBot_Cloud.ViewModel
 
             if (await Payment(paymentRequest))
             {
-                await _dataProcessing.UpdateUserSubscribe(userId, subName);                
+                await _dataProcessing.UpdateUserSubscribe(userId, subName); //Обновление подписки пользователя в БД
                 return true;
             }
             else
                 return false;
         }
+        #endregion Public_Methods
     }
 }

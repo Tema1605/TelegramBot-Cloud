@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using TelegramBot_Cloud.ViewModel;
 
@@ -6,14 +7,14 @@ namespace TelegramBot_Cloud
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            StartBot();
+            await StartBot();
             Console.ReadKey();
         }
-        private static void StartBot()
+        private static async Task StartBot()
         {
-            new BotVM();
+            await new BotVM().InitializeAsync();
         }
         
     }

@@ -8,7 +8,7 @@ namespace TelegramBot_Cloud.Model
     internal class SqlConnect : IDisposable
     {
         SqlConnection sqlConnection = new SqlConnection(
-            @"Data Source=LAPTOP-5OB9P5SK\SQLEXPRESS;Initial Catalog=TelegramBotCloud;Integrated Security=True");
+            @"Data Source=TEMADRUZHININ\SQLEXPRESS;Initial Catalog=TelegramBotCloud;Integrated Security=True");
         public async Task OpenConnectionAsync()
         {
             if (sqlConnection.State == System.Data.ConnectionState.Closed)

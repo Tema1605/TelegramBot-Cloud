@@ -11,12 +11,11 @@ namespace TelegramBot_Cloud.Model
 {
     internal class CloudProcessing
     {
-        #region Private_Fields
-        //private static readonly string _filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\TelegramBotCloud";
-        
-        #endregion Private_Fields
-
         #region Private_Methods
+        /// <summary>
+        /// Проверяет, существует ли папка пользователя.
+        /// </summary>
+        /// <param name="path">Путь до папки.</param>
         private void CheckAndCreateFolder(string path)
         {
             try
@@ -29,12 +28,34 @@ namespace TelegramBot_Cloud.Model
                 Console.WriteLine("Ошибка при создании папки пользователя: " + ex);
             }
         }
+
+        /// <summary>
+        /// Проверяет, является ли папка пустой.
+        /// </summary>
+        /// <param name="path">Путь до папки.</param>
+        /// <returns>True, если папка не пустая. False, в противном случае.</returns>
+        private bool IsFolderEmpty(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                return Directory.GetFiles(path).Length != 0 || Directory.GetDirectories(path).Length != 0;
+            }
+
+            return false;
+        }
         #endregion Private_Methods
 
         #region Public_Methods
+        /// <summary>
+        /// Сохраняет файл.
+        /// </summary>
+        /// <param name="file">Файл.</param>
+        /// <param name="fileName">Имя Файла.</param>
+        /// <param name="path">Путь до папки.</param>
+        /// <returns>True, если файл сохранен. False, в противном случае.</returns>
         public async Task<bool> FileSaving(Telegram.Bot.Types.File file, string fileName, string path)
-        {
-            CheckAndCreateFolder(path);
+        {            
+            CheckAndCreateFolder(path); //Проверка существования или создание папки пользователя
             string filePath = $"{path}\\{fileName}";
             try
             {
@@ -50,6 +71,12 @@ namespace TelegramBot_Cloud.Model
                 return false;
             }
         }
+
+        /// <summary>
+        /// Вычисляет, вес папки.
+        /// </summary>
+        /// <param name="path">Путь до папки.</param>
+        /// <returns>Возвращает вес папки в МБ.</returns>
         public double CalculateFolderWeight(string path)
         {
             long totalSize = 0;
@@ -66,10 +93,17 @@ namespace TelegramBot_Cloud.Model
             } 
             catch(Exception ex)
             {
-                Console.WriteLine("Ошибка при расчете свободного места: " + ex.Message);
+                Console.WriteLine("Ошибка при расчете занимаемого пространства: " + ex.Message);
                 return 0;
             }
         }
+
+        /// <summary>
+        /// Отправляет файл пользователю.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <param name="path">Путь до папки.</param>
+        /// <param name="fileName">Имя файла.</param>
         public async Task GetFile(long userId, string path, string fileName)
         {
             string filePath = $"{path}\\{fileName}";
@@ -81,8 +115,7 @@ namespace TelegramBot_Cloud.Model
                         chatId: userId,
                         document: InputFile.FromStream(stream: stream, fileName: fileName));
                     stream.Close();
-                }
-
+                }            
             }
             catch (Exception ex)
             {
@@ -90,6 +123,12 @@ namespace TelegramBot_Cloud.Model
             }
             
         }
+
+        /// <summary>
+        /// Удаляет файл.
+        /// </summary>
+        /// <param name="path">Путь до файла.</param>
+        /// <returns>True, если файл удален. False, в противном случае.</returns>
         public async Task<bool> DeleteFile(string path)
         {
             try
@@ -107,11 +146,22 @@ namespace TelegramBot_Cloud.Model
                 return false;
             }
         }
+
+        /// <summary>
+        /// Получает список файлов пользователя.
+        /// </summary>
+        /// <param name="path">Путь до папки.</param>
+        /// <returns>Возвращает список файлов пользователя.</returns>
         public List<string> GetListUserFiles(string path)
         {
-            CheckAndCreateFolder(path);
-            List<string> filesDir = (from a in Directory.GetFiles(path) select Path.GetFileName(a)).ToList();
-            return filesDir;
+            CheckAndCreateFolder(path); //Проверка существования или создание папки пользователя
+
+            if (IsFolderEmpty(path)) //Проверка на наличие файлов в папке
+            {
+                List<string> filesDir = (from a in Directory.GetFiles(path) select Path.GetFileName(a)).ToList();
+                return filesDir;
+            }
+            return null;
         }
         #endregion Public_Methods
     }
