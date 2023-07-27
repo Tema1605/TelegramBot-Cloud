@@ -100,7 +100,7 @@ namespace TelegramBot_Cloud.ViewModel
 
             if (await Payment(paymentRequest))
             {
-                await _dataProcessing.UpdateUserSubscribe(userId, subName); //Обновление подписки пользователя в БД
+                await _dataProcessing.UpdateUserSubscribeAsync(userId, subName); //Обновление подписки пользователя в БД
                 return true;
             }
             else

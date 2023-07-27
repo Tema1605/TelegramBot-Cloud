@@ -8,6 +8,11 @@ namespace TelegramBot_Cloud.Model
 {
     internal class DataProcessing
     {
+        /// <summary>
+        /// Проверка на существование данных о пользователе в БД.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <returns>True, если пользователь зарегестрирован. False, в противном случае.</returns>
         public async Task<bool> UserVerificationAsync(long userId)
         {
             bool userExists;
@@ -36,6 +41,12 @@ namespace TelegramBot_Cloud.Model
             }
         }
 
+        /// <summary>
+        /// Заполнение данных о пользователе в БД.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <param name="username">Имя пользователя.</param>
+        /// <param name="firstName">Имя.</param>
         public async Task RegistrationUserAsync(long userId, string username = null, string firstName = null)
         {
             using (SqlConnect connection = new SqlConnect())
@@ -75,6 +86,12 @@ namespace TelegramBot_Cloud.Model
             }
         }
 
+        /// <summary>
+        /// Сохранение данных о файле в БД
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <param name="filename">Имя файла.</param>
+        /// <param name="fileWeight">Вес файла.</param>
         public async Task SavingFileDataAsync(long userId, string filename, double fileWeight)
         {
             using (SqlConnect connection = new SqlConnect())
@@ -102,7 +119,12 @@ namespace TelegramBot_Cloud.Model
             }
         }
 
-        public async Task<string> GetUserSubscribe(long userId)
+        /// <summary>
+        /// Получение текущей подписки пользователя.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <returns>Название подписки пользователя</returns>
+        public async Task<string> GetUserSubscribeAsync(long userId)
         {
             using (SqlConnect connection = new SqlConnect())
             {
@@ -128,7 +150,12 @@ namespace TelegramBot_Cloud.Model
             }
         }
 
-        public async Task<object> GetExpirationDateSubscribe(long userId)
+        /// <summary>
+        /// Получение даты окончания текущей подписки пользователя.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <returns>Дата окончания подписки.</returns>
+        public async Task<DateTime> GetExpirationDateSubscribeAsync(long userId)
         {
             using (SqlConnect connection = new SqlConnect())
             {
@@ -140,18 +167,30 @@ namespace TelegramBot_Cloud.Model
 
                     using (SqlCommand command = new SqlCommand(query, connection.GetConnection()))
                     {
-                        return await command.ExecuteScalarAsync();
+                        var result =  await command.ExecuteScalarAsync();
+
+                        if (result != null && result != DBNull.Value)
+                        {
+                            DateTime dateTimeValue = (DateTime)result;
+                            return dateTimeValue;
+                        }
+                        return DateTime.MinValue;
                     }
                 }
                 catch (Exception ex)
                 {
                     await Console.Out.WriteLineAsync(ex.Message);
-                    return null;
+                    return DateTime.MinValue;
                 }
             }
         }
 
-        public async Task UpdateUserSubscribe(long userId, string subName)
+        /// <summary>
+        /// Обновление подписки пользователя.
+        /// </summary>
+        /// <param name="userId">Id Пользователя.</param>
+        /// <param name="subName">Название подписки.</param>
+        public async Task UpdateUserSubscribeAsync(long userId, string subName)
         {
             using (SqlConnect connection = new SqlConnect())
             {
@@ -176,7 +215,11 @@ namespace TelegramBot_Cloud.Model
             }
         }
 
-        public async Task<List<long>> GetExpiredSubscriptions()
+        /// <summary>
+        /// Получение списка пользователей у которых закончилась подписка
+        /// </summary>
+        /// <returns>Список Id пользователей у которых закончилась подписка</returns>
+        public async Task<List<long>> GetExpiredSubscriptionsAsync()
         {
             using (SqlConnect connection = new SqlConnect())
             {

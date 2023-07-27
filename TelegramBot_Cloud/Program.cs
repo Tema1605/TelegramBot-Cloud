@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Telegram.Bot.Types;
 using TelegramBot_Cloud.ViewModel;
 
 namespace TelegramBot_Cloud

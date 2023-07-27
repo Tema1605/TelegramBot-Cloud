@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBot_Cloud.Model;
@@ -25,98 +26,107 @@ namespace TelegramBot_Cloud.ViewModel
         #endregion Constructor
 
         #region Public_Methods
-        public async Task ProcessCommand(Update update)
+        /// <summary>
+        /// Обработчик команд.
+        /// </summary>
+        /// <param name="update"></param>
+        public async Task CommandHandlerAsync(Update update)
         {
-            await _cloudVM.CheckIfUserExists(update);
+            await _cloudVM.CheckIfUserExists(update); // Проверка наличия данных о пользователе
 
-            string command = update.Message.Text;
-            long userId = update.Message.Chat.Id;
+            string command = update.Message.Text; // Команда
+            long userId = update.Message.Chat.Id; // Id Пользователя
 
+            //Обработка команды
             switch (command.ToLower().Trim())
             {
                 case "/start":
-                    await _buttonHandler.Greeting(userId);
+                    await _buttonHandler.StartBotMessage(userId);
                     break;
                 case "/menu":
-                    await _buttonHandler.ShowMenu(userId);
+                    await _buttonHandler.SendingButtonMenuAsync(userId);
                     break;
                 case "/pay":
-                    await _buttonHandler.DonationMenu(userId);
+                    await _buttonHandler.SendingDonationMenuAsync(userId);
                     break;
                 default:
                     break;
             }
         }
-        public async Task ProcessCallbackQuery(string callbackId, long chatId)
-        {
-            var callbackQuery = new CallbackQuery
+
+        /// <summary>
+        /// Обработчик Callback.
+        /// </summary>
+        /// <param name="callbackQuery"></param>
+        public async Task CallbackHandlerAsync(CallbackQuery callbackQuery)
+        {          
+            if (callbackQuery.Id != null)
             {
-                Message = new Message
+                var action = callbackQuery.Data; // Действие
+                var userId = callbackQuery.Message.Chat.Id; // Id Пользователя
+                var messageId = callbackQuery.Message.MessageId; // Id Сообщения
+
+                await BotVM.BotClient.AnswerCallbackQueryAsync(callbackQuery.Id); // Обратный ответ
+
+                try
                 {
-                    Chat = new Chat
+                    if (action.Contains("GetFile_")) // Проверка на получение файла
                     {
-                        Id = chatId
+                        await _cloudVM.GetUserFileAsync(userId, action.Replace("GetFile_", ""));
+                        return;
                     }
-                },
-                Data = callbackId
-            };
+                    else if (action.Contains("DelFile_")) // Проверка на удаление файла
+                    {
+                        await _cloudVM.DeleteUserFileAsync(userId, action.Replace("DelFile_", ""));
+                        return;
+                    }
+                    else if (action.Contains("RSUB_")) // Проверка на продление подписки
+                    {
+                        await MessageHandler.RemoveMessageAsync(userId, messageId);
 
-            await HandlerCallbackAsync(callbackQuery);
-        }
-        public async Task HandlerCallbackAsync(CallbackQuery callbackQuery)
-        {
-            var action = callbackQuery.Data;
-            var userId = callbackQuery.Message.Chat.Id;
+                        var _action = action.Replace("RSUB_", "");
 
-            if (action.Contains("GetFile_"))
-            {
-                await _cloudVM.GetUserFile(userId, action.Replace("GetFile_", ""));
-                return;
-            }
-            else if (action.Contains("DelFile_"))
-            {
-                await _cloudVM.DeleteUserFile(userId, action.Replace("DelFile_", ""));
-                return;                
-            }
-            else if (action.Contains("RSUB_"))
-            {
-                var _action = action.Replace("RSUB_", "");
-                if (_action == "NotRenewal")
-                {
-                    await _subscriptionsProcessing.UnsubscribeProcedureAsync(userId);
+                        if (_action == "NotRenewal")
+                        {
+                            await _subscriptionsProcessing.UnsubscribeProcedureAsync(userId);
+                        }
+                        else
+                        {
+                            await _subscriptionsProcessing.RegistrationSubscriptionAsync(userId, _action, false);
+                        }
+                        return;
+                    }
+                    else if (action.Contains("SUB_")) // Проверка на оформление подписки
+                    {
+                        await _subscriptionsProcessing.RegistrationSubscriptionAsync(userId, action.Replace("SUB_", ""));
+                        return;
+                    }
+
+
+                    switch (action)
+                    {
+                        case "ProfileInfo":
+                            await MessageHandler.EditKeyboardMessageAsync(userId, messageId, $"{await _cloudVM.UserInfoAsync(userId)}", null);
+                            break;
+                        case "GetFile":
+                            await _cloudVM.UserFilesAsync(callbackQuery, messageId, FileActions.Action.GetFile);
+                            break;
+                        case "DeleteFile":
+                            await _cloudVM.UserFilesAsync(callbackQuery, messageId, FileActions.Action.DeleteFile);
+                            break;
+                        case "Subscribe":
+                            await _buttonHandler.SendingDonationMenuAsync(userId, messageId);
+                            break;
+
+                        default: break;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    await _subscriptionsProcessing.RegistrationSubscriptionAsync(userId, _action);
+                    await Console.Out.WriteLineAsync(ex.Message);
                 }
-                return;
-            }
-            else if (action.Contains("SUB_"))
-            {
-                await _subscriptionsProcessing.RegistrationSubscriptionAsync(userId, action.Replace("SUB_", ""));
-                return;
             }
             
-
-            switch (action)
-            {
-                case "ProfileInfo":
-                    await MessageHandler.SendMessageUser(callbackQuery.Message.Chat.Id, $"{await _cloudVM.UserInfo(callbackQuery.Message.Chat.Id)}");
-                    break;
-                case "GetFile":
-                    await _cloudVM.UserFiles(callbackQuery, FileActions.Action.GetFile);
-                    break;
-                case "DeleteFile":
-                    await _cloudVM.UserFiles(callbackQuery, FileActions.Action.DeleteFile);
-                    break;
-                case "Subscribe":
-                    await _buttonHandler.DonationMenu(callbackQuery.Message.Chat.Id);
-                    break;
-
-                default : break;
-            }
-            if (callbackQuery.Id != null)
-                await BotVM.BotClient.AnswerCallbackQueryAsync(callbackQuery.Id);
         }
         #endregion Public_Methods
     }

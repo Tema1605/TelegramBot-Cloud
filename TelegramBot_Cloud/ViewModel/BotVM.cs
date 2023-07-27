@@ -13,6 +13,7 @@ namespace TelegramBot_Cloud.ViewModel
         #region Private_Fields 
         private static readonly string _token = "6193581433:AAHwdLPmS_376F0uU8ASOlzCS_t8P2ewf70";
         private static readonly string _tokenPay = "401643678:TEST:5227cf38-5118-4e17-a695-0389534eb4a3";
+
         private DataProcessing _dataProcessing;
         private CommandHandler _commandHandler;
         private ButtonHandler _buttonHandler;
@@ -41,9 +42,9 @@ namespace TelegramBot_Cloud.ViewModel
             _cloudVM = new CloudVM(_cloudProcessing, _buttonHandler, _dataProcessing, _subscriptionsProcessing);
             _commandHandler = new CommandHandler(_buttonHandler, _cloudVM, _subscriptionsProcessing);
             _messageHandler = new MessageHandler(_commandHandler, _cloudVM);
-
             _subscriptionsProcessing._cloudVM = _cloudVM;
-            await _subscriptionsProcessing.CheckingUserSubscriptionsAsync();
+
+            await _subscriptionsProcessing.CheckingUserSubscriptionsAsync(); // Проверка актуальности подписки пользователей
 
             return this;
         }
@@ -52,11 +53,11 @@ namespace TelegramBot_Cloud.ViewModel
         #region Private_Methods
         private async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
-            if (update.Message != null) 
-                await _messageHandler.GetMessageFormat(update);
+            if (update.Message != null)
+                await _messageHandler.GetMessageFormatAsync(update);
 
             else if (update.CallbackQuery != null)
-                await _commandHandler.ProcessCallbackQuery(update.CallbackQuery.Data, update.CallbackQuery.Message.Chat.Id);
+                await _commandHandler.CallbackHandlerAsync(update.CallbackQuery);
         }
         private async Task Error(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
         {
@@ -64,6 +65,5 @@ namespace TelegramBot_Cloud.ViewModel
             throw new NotImplementedException();
         }
         #endregion Private_Methods
-
     }
 }

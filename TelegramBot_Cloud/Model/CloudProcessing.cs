@@ -13,7 +13,7 @@ namespace TelegramBot_Cloud.Model
     {
         #region Private_Methods
         /// <summary>
-        /// Проверяет, существует ли папка пользователя.
+        /// Проверяет, существует ли папка, в противном случае создает.
         /// </summary>
         /// <param name="path">Путь до папки.</param>
         private void CheckAndCreateFolder(string path)

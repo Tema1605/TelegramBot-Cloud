@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
-using TelegramBot_Cloud.ViewModel;
 
 namespace TelegramBot_Cloud.Model
 {
     internal static class SubscribeLevelsRepository
     {
-        private static DataProcessing dataProcessing = new DataProcessing();
-
         private static readonly ObservableCollection<SubscribeLevels> _subscribeLevels
             = new ObservableCollection<SubscribeLevels>() 
             { 
@@ -20,6 +15,11 @@ namespace TelegramBot_Cloud.Model
                 new SubscribeLevels() { Name = "Professional", LimitBytes = 67108864}
             };
 
+        /// <summary>
+        /// Получение лимита памяти подписки.
+        /// </summary>
+        /// <param name="subName">Название подписки</param>
+        /// <returns>Лимит памяти подписки в байтах</returns>
         public static long GetMemorySubscribe(string subName)
         {
             try
